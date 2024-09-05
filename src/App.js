@@ -1,37 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { RegistrantList } from './RegistrantList';
 import { RegistrationForm } from './RegistrationForm';
+import { db } from './firebase'; // Firebaseのインポート
+import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 
 function App() {
   const [registrants, setRegistrants] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const baseURL = `${window.location.protocol}//${window.location.hostname}`
+  
 
+  // Firestoreからデータを読み込む
   useEffect(() => {
-    axios.get(baseURL + ':3001/registrants')
-      .then(response => setRegistrants(response.data))
-      .catch(error => console.error('Error loading registrants:', error));
+    const fetchData = async () => {
+      const querySnapshot = await getDocs(collection(db, "registrants"));
+      const data = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setRegistrants(data);
+    };
+
+    fetchData();
   }, []);
 
-  const handleAddRegistrant = (newRegistrant) => {
-    axios.post(baseURL + ':3001/registrants', newRegistrant)
-      .then(() => {
-        setRegistrants([...registrants, newRegistrant]);
-        setShowForm(false);
-      })
-      .catch(error => console.error('Error adding registrant:', error));
+  // Firestoreにデータを保存
+  const handleAddRegistrant = async (newRegistrant) => {
+    await addDoc(collection(db, "registrants"), newRegistrant);
+    setRegistrants([...registrants, newRegistrant]);
+    setShowForm(false);
   };
 
-  const handleDeleteRegistrant = (index, id) => {
-    axios.delete(baseURL + ':3001/registrants/' + id)
-      .then(() => {
-        setRegistrants([...registrants, newRegistrant]);
-        setShowForm(false);
-      })
-      .catch(error => console.error('Error adding registrant:', error));
-    const updatedRegistrants = registrants.filter((_, i) => i !== index);
-    setRegistrants(updatedRegistrants);
+  // Firestoreからデータを削除
+  const handleDeleteRegistrant = async (id) => {
+    await deleteDoc(doc(db, "registrants", id));
+    setRegistrants(registrants.filter((registrant) => registrant.id !== id));
   };
 
   return (

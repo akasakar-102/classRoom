@@ -50,7 +50,7 @@ export const RegistrantList = ({ registrants, onAddNew, onDeleteRegistrant }) =>
                     <FontAwesomeIcon
                     icon={faTrash}
                     className="text-gray-400 cursor-pointer hover:text-red-700 transition duration-300"
-                    onClick={() => handleDelete(index, registrant.id)}
+                    onClick={() => handleDelete(index)}
                     />
                 </div>
             )}
